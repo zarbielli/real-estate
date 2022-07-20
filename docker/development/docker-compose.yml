@@ -1,0 +1,31 @@
+version: '3.7'
+
+volumes:
+  database_data:
+    driver: local
+
+services:
+  db_dev:
+    image: 'arm64v8/postgres:10.21-alpine3.16'
+    ports:
+      - '5432:5432'
+    expose:
+      - 5432
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: example
+    volumes:
+      - database_data:/var/lib/postgresql/data
+  api_dev:
+    ports:
+      - '3000:3000'
+    build:
+      dockerfile: docker/development/Dockerfile
+      context: ../..
+    environment:
+      POSTGRES_HOST: db_dev
+      POSTGRES_PORT: 5432
+    command: buffalo dev
+    env_file:
+      - ./database.env

@@ -1,6 +1,4 @@
-# This is a multi-stage Dockerfile and requires >= Docker 17.05
-# https://docs.docker.com/engine/userguide/eng-image/multistage-build/
-FROM gobuffalo/buffalo:v0.18.7 as builder
+FROM --platform='linux/arm/v6' gobuffalo/buffalo:v0.18.7 as builder
 
 ENV GOPROXY http://proxy.golang.org
 
@@ -8,16 +6,17 @@ RUN mkdir -p /src/study
 WORKDIR /src/study
 
 # Copy the Go Modules manifests
-COPY go.mod go.mod
-COPY go.sum go.sum
-# cache deps before building and copying source so that we don't need to re-download as much
+COPY ../../go.mod go.mod
+COPY ../../go.sum go.sum
+
+# Cache deps before building and copying source so that we don't need to re-download as much
 # and so that source changes don't invalidate our downloaded layer
 RUN go mod download
 
-ADD . .
+ADD ../.. .
 RUN buffalo build --static -o /bin/app
 
-FROM alpine
+FROM --platform='linux/arm/v6' golang:alpine3.15  as dev
 RUN apk add --no-cache bash
 RUN apk add --no-cache ca-certificates
 
